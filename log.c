@@ -18,43 +18,6 @@
 
 static FILE *logfile;
 
-static int curday = 0;
-
-/*************************************************************************/
-
-static int get_logname(char *name, int count, struct tm *tm) {
-
-        char timestamp[32];
-
-        if (!tm) {
-                time_t t;
-
-                time(&t);
-                tm = localtime(&t);
-        }
-
-        strftime(timestamp, count, "%Y%m%d", tm);
-        snprintf(name, count, "logs/%s.%s", log_filename, timestamp);
-        curday = tm->tm_yday;
-
-        return 1;
-}
-
-/*************************************************************************/
-
-static void checkday(void) {
-        time_t t;
-        struct tm tm;
-
-        time(&t);
-        tm = *localtime(&t);
-
-        if (curday != tm.tm_yday) {
-                close_log();
-                open_log();
-        }
-}
-
 /*************************************************************************/
 
 /* Open the log file.  Return -1 if the log file could not be opened, else
@@ -62,14 +25,9 @@ static void checkday(void) {
 
 int open_log(void)
 {
-    char name[PATH_MAX];
-
     if (logfile)
 	return 0;
-
-    if (!get_logname(name, sizeof(name), NULL)) return 0;
-    logfile = fopen(name, "a");
-
+    logfile = fopen(log_filename, "a");
     if (logfile)
 	setbuf(logfile, NULL);
     return logfile!=NULL ? 0 : -1;
@@ -98,8 +56,6 @@ void log(const char *fmt, ...)
     struct tm tm;
     char buf[256];
     int errno_save = errno;
-
-    checkday();
 
     va_start(args, fmt);
     time(&t);
@@ -146,8 +102,6 @@ void log_perror(const char *fmt, ...)
     int errno_save = errno;
     const char *errstr;
 
-    checkday();
-
     va_start(args, fmt);
     time(&t);
     tm = *localtime(&t);
@@ -193,8 +147,6 @@ void fatal(const char *fmt, ...)
     struct tm tm;
     char buf[256], buf2[4096];
 
-    checkday();
-
     va_start(args, fmt);
     time(&t);
     tm = *localtime(&t);
@@ -234,8 +186,6 @@ void fatal_perror(const char *fmt, ...)
     char buf[256], buf2[4096];
     int errno_save = errno;
     const char *errstr;
-
-    checkday();
 
     va_start(args, fmt);
     time(&t);
