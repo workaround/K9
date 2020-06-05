@@ -41,7 +41,7 @@ CDEFS =-DUSE_MYSQL
 # debugging symbols on GCC.  If you have a non-GCC compiler, you may want
 # to comment it out or change it.
 
-MORE_CFLAGS = -Wall -g
+MORE_CFLAGS = -fgnu89-inline -Wall -g
 
 
 ######################## End configuration section ########################
